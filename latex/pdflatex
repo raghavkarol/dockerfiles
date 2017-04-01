@@ -1,0 +1,31 @@
+# -*- sh -*-
+#!/bin/bash
+
+# Some useful commands
+# docker run --rm -i -t $docker_image_tag $@
+# docker run --entrypoint bash --rm -i -t $docker_image_tag $@
+
+set -euo pipefail
+
+docker_image_tag=raghavkarol/latex:latest
+
+function die {
+    echo "$(basename $0): $@"
+    exit 1
+}
+
+
+[[ $# != 1 ]] && die "needs a valid file as argument"
+tex_file_path=$1; shift
+[[ -f $tex_file_path ]] || die "$tex_file_path not a valid file"
+
+tex_file_name=$(basename $tex_file_path)
+tex_file_dir=$(cd $(dirname $tex_file_path) ; pwd)
+
+docker_mount_path=/data
+
+docker run --rm -i \
+       -v $tex_file_dir:$docker_mount_path \
+       --workdir=$docker_mount_path \
+       -t $docker_image_tag \
+       $tex_file_name
